@@ -143,7 +143,7 @@ export default function App() {
             Anterior
           </button>
 
-          /*Renderizo botones de cada página */
+          {/*Renderizo botones de cada página */}
           {Array.from({ length: totalPaginas }, (_, i) => (
             <button
               key={i}
