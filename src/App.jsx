@@ -4,7 +4,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { CircularProgress } from '@mui/material'
 import ReactModal from 'react-modal'
-
+import { motion } from 'framer-motion'
 // Si tus archivos están en src/components mantén estas rutas;
 // de lo contrario usa './SearchInput' y './UserCard'
 import SearchInput from './components/SearchInput'
@@ -128,7 +128,11 @@ export default function App() {
         overlayClassName="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center"
       >
         {usuarioSeleccionado && (
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}>
             <img
             className='w-32 h-32 rounded-full mx-auto mb-4'
               src={usuarioSeleccionado.foto}
@@ -156,7 +160,7 @@ export default function App() {
             >
               Cerrar
             </button>
-          </div>
+          </motion.div>
         )}
       </ReactModal>
 
