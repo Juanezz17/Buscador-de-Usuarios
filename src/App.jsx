@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import axios from 'axios'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { CircularProgress } from '@mui/material'
 
 // Si tus archivos están en src/components mantén estas rutas;
 // de lo contrario usa './SearchInput' y './UserCard'
@@ -15,6 +16,7 @@ export default function App() {
   const [filtrados, setFiltrados] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [buscando, setBuscando] = useState(false)
 
   const obtenerUsuarios = useCallback(async () => {
     setLoading(true)
@@ -38,12 +40,23 @@ export default function App() {
   }, [obtenerUsuarios])
 
   const filtrarUsuarios = useCallback((query) => {
-    const q = query.trim().toLowerCase()
-    const resultados = usuarios.filter((u) =>
-      [u.nombre, u.apellidos, u.perfil, u.intereses, u.correo]
-        .some((campo) => String(campo).toLowerCase().includes(q))
-    )
-    setFiltrados(resultados)
+
+    setBuscando(true)
+
+    setTimeout(() => {
+      if (query.trim() === '') {
+        setFiltrados(usuarios)
+      } else {
+        const q = query.trim().toLowerCase()
+        const resultados = usuarios.filter((u) =>
+          [u.nombre, u.apellidos, u.perfil, u.intereses, u.correo]
+            .some((campo) => String(campo).toLowerCase().includes(q))
+        )
+        setFiltrados(resultados)
+      }
+      setBuscando(false)
+    }, 1000) // Simula un retardo de búsqueda
+   
   }, [usuarios])
 
   return (
@@ -63,15 +76,22 @@ export default function App() {
         </div>
       )}
 
-      {!loading && !error && filtrados.length === 0 && (
-        <p className="mt-6 text-center text-gray-600">Sin resultados para tu búsqueda.</p>
+      {buscando && !loading && !error && (
+        <div className="mt-6 text-center">
+          <CircularProgress size={32} />
+          <span className="ml-2 text-gray-600">Buscando…</span>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 gap-4 mt-6">
+      { !loading && !error && filtrados.length === 0 && (
+        <p className="mt-6 text-center text-gray-600">Sin resultados para tu búsqueda.</p>
+      )}  
+
+      {!buscando &&<div className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 gap-4 mt-6">
         {filtrados.map((usuario) => (
           <UserCard key={usuario.id} usuario={usuario} />
         ))}
-      </div>
+      </div>}
 
       <ToastContainer position="bottom-right" />
     </div>
