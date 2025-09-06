@@ -5,8 +5,6 @@ import 'react-toastify/dist/ReactToastify.css'
 import { CircularProgress } from '@mui/material'
 import ReactModal from 'react-modal'
 import { motion } from 'framer-motion'
-// Si tus archivos están en src/components mantén estas rutas;
-// de lo contrario usa './SearchInput' y './UserCard'
 import SearchInput from './components/SearchInput'
 import UserCard from './components/UserCard'
 
@@ -20,6 +18,18 @@ export default function App() {
   const [buscando, setBuscando] = useState(false)
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null)
   const [modalAbierto, setModalAbierto] = useState(false)
+
+  //  Estado para la paginación
+  const [paginaActual, setPaginaActual] = useState(1) // Página actual
+  const usuariosPorPagina = 9                         // Fijo: 9 usuarios por página
+
+  //  Calculo los índices para cortar el array según la página
+  const indiceUltimo = paginaActual * usuariosPorPagina
+  const indicePrimero = indiceUltimo - usuariosPorPagina
+  const usuariosActuales = filtrados.slice(indicePrimero, indiceUltimo) // Subarray de usuarios de la página
+
+  //  Total de páginas
+  const totalPaginas = Math.ceil(filtrados.length / usuariosPorPagina)
 
   const obtenerUsuarios = useCallback(async () => {
     setLoading(true)
@@ -58,8 +68,9 @@ export default function App() {
           )
           setFiltrados(resultados)
         }
+        setPaginaActual(1) //  Cuando se hace una búsqueda, reseteo a la página 1
         setBuscando(false)
-      }, 1000) // Simula un retardo de búsqueda
+      }, 1000)
     },
     [usuarios]
   )
@@ -112,11 +123,50 @@ export default function App() {
           className="grid grid-cols-1 sm:grid-cols-2  md:grid-cols-3 gap-4 mt-6"
           role="grid"
         >
-          {filtrados.map((usuario) => (
+          {/*  Ahora muestro solo los usuarios de la página actual */}
+          {usuariosActuales.map((usuario) => (
             <div onClick={() => abrirModal(usuario)} key={usuario.id}>
               <UserCard usuario={usuario} />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Controles de paginación */}
+      {!loading && !error && filtrados.length > usuariosPorPagina && (
+        <div className="flex justify-center mt-6 space-x-2">
+          <button
+            onClick={() => setPaginaActual((prev) => Math.max(prev - 1, 1))}
+            disabled={paginaActual === 1}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Anterior
+          </button>
+
+          /*Renderizo botones de cada página */
+          {Array.from({ length: totalPaginas }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setPaginaActual(i + 1)}
+              className={`px-3 py-1 rounded ${
+                paginaActual === i + 1
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() =>
+              setPaginaActual((prev) => Math.min(prev + 1, totalPaginas))
+            }
+            disabled={paginaActual === totalPaginas}
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          >
+            Siguiente
+          </button>
         </div>
       )}
 
@@ -132,9 +182,10 @@ export default function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}>
+            transition={{ duration: 0.5 }}
+          >
             <img
-            className='w-32 h-32 rounded-full mx-auto mb-4'
+              className='w-32 h-32 rounded-full mx-auto mb-4'
               src={usuarioSeleccionado.foto}
               alt={usuarioSeleccionado.nombre}
             />
