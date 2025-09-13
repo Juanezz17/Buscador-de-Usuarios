@@ -15,11 +15,15 @@ ReactDOM.createRoot(document,getElementById("root")).render(
         <BrowserRouter>
         <AuthProvider>
             <Routes>
-                <Route path = "/login" element={<Login />} />
+                <Route path='/login' element={<Login />} />
+                <Route path = "/usuarios" element={
                     <PrivateRouter>
                         <App />
                     </PrivateRouter>
-                </Route>
+                } 
+            />
+
+                <Route path='*' element={< login />} />
             </Routes>
         </AuthProvider>
         </BrowserRouter>
