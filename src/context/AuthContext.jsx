@@ -1,46 +1,43 @@
-import { children, createContext, useContext, useMemo, useState} from 'react'
-import { useNavigate} from 'react-router-dom';
+import { createContext, useContext, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+const AuthContext = createContext(null)
 
-const AuthContext = createContext(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const navigate = useNavigate()
 
-export default function AuthProvider (){
-    const[user,setUser] = useState(null);
+  const login = (username, password) => {
+    const ok = username.trim() === 'admin' && password === '1234'
 
-    const navigate = useNavigate();
+    if (!ok) return { ok: false, message: 'credenciales inválidas' }
 
-    const login = (username, password) => {
-        const ok = username.trim() === "admin" && password === "1234";
+    const session = { username, name: 'Administrador' }
 
-        if (!ok) return {ok: false, message: "Credenciales Inválidas"}
+    setUser(session) 
+    navigate('/usuarios', { replace: true }) 
 
-        const session  = {username, name: "Administrador"}
+    return { ok: true }
+  }
 
-        setUser(session)
+  const logout = () => {
+    setUser(null) 
+    navigate('/login', { replace: true }) 
+  }
 
-        navigate("/usuarios", {replace: true})
+ // Se agreo una coma antes de [user] y asi ya funciono correctamente el login
+  const value = useMemo(() => ({
+    user,
+    isAuthenticated: !!user,
+    login,
+    logout,
+  }), [user])
 
-        return {ok: true}
-    }
-
-    const logout = () => {
-        setUser(null)
-
-        navigate("/login", {replace: true});
-    }
-
-    const value = useMemo (() => ({
-        user, isAuthenticated: !! user, login, logout
-
-    }) [user])
-    return <AuthContext.Provider
-    value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export default function useAuth() {
-    const ctx =useContext (AuthContext);
-
-    if (!ctx ) throw new Error("useAuth debe usasrse dentro de < AuthProvider>");
-
-    return ctx
+export function useAuth() {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth debe usarse dentro de <AuthProvider>') 
+  return ctx
 }
